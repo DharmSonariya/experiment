@@ -7,13 +7,15 @@ import aws_cdk.aws_codebuild as codebuild
 from aws_cdk import pipelines
 from constructs import Construct
 
-
-GITHUB_CONNECTION_ARN = "CONNECTION_ARN"
-GITHUB_OWNER = "OWNER"
-GITHUB_REPO = "REPO"
-GITHUB_TRUNK_BRANCH = "TRUNK_BRANCH"
+GITHUB_CONNECTION_ARN = (
+    "arn:aws:codestar-connections:us-west-2:"
+    "018357457516:connection/a3e6f47e-23bc-43f9-83e0-c84a244dfe57"
+)
+GITHUB_OWNER = "DharmSonariya"
+GITHUB_REPO = "experiment"
+GITHUB_TRUNK_BRANCH = "main"
 PRODUCTION_ENV_NAME = "Production"
-PRODUCTION_ENV_ACCOUNT = "222222222222"
+PRODUCTION_ENV_ACCOUNT = "018357457516"
 PRODUCTION_ENV_REGION = "us-west-2"
 
 
