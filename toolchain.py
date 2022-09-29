@@ -41,7 +41,7 @@ class Toolchain(cdk.Stack):
             commands=["./scripts/run-tests.sh", "npx cdk synth"],
             primary_output_directory="cdk.out",
         )
-        pipelines.CodePipeline(
+        pipeline = pipelines.CodePipeline(
             self,
             "Pipeline",
             cli_version=Toolchain._get_cdk_cli_version(),
@@ -50,6 +50,7 @@ class Toolchain(cdk.Stack):
             publish_assets_in_parallel=False,
             synth=synth,
         )
+        Toolchain._add_production_stage(pipeline)
 
     @staticmethod
     def _get_cdk_cli_version() -> str:
