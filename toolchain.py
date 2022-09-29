@@ -4,8 +4,12 @@ from typing import Any
 
 import aws_cdk as cdk
 import aws_cdk.aws_codebuild as codebuild
+import aws_cdk.aws_dynamodb as dynamodb
 from aws_cdk import pipelines
 from constructs import Construct
+
+import constants
+from backend.component import Backend
 
 GITHUB_CONNECTION_ARN = (
     "arn:aws:codestar-connections:us-west-2:"
@@ -56,3 +60,28 @@ class Toolchain(cdk.Stack):
             package_json = json.load(package_json_file)
         cdk_cli_version = str(package_json["devDependencies"]["aws-cdk"])
         return cdk_cli_version
+
+    @staticmethod
+    def _add_production_stage(pipeline: pipelines.CodePipeline) -> None:
+        production = cdk.Stage(
+            pipeline,
+            PRODUCTION_ENV_NAME,
+            env=cdk.Environment(
+                account=PRODUCTION_ENV_ACCOUNT, region=PRODUCTION_ENV_REGION
+            ),
+        )
+        backend = Backend(
+            production,
+            constants.APP_NAME + PRODUCTION_ENV_NAME,
+            stack_name=constants.APP_NAME + PRODUCTION_ENV_NAME,
+            api_lambda_reserved_concurrency=10,
+            database_dynamodb_billing_mode=dynamodb.BillingMode.PROVISIONED,
+        )
+        api_endpoint_env_var_name = constants.APP_NAME.upper() + "_API_ENDPOINT"
+        smoke_test_commands = [f"curl ${api_endpoint_env_var_name}"]
+        smoke_test = pipelines.ShellStep(
+            "SmokeTest",
+            env_from_cfn_outputs={api_endpoint_env_var_name: backend.api_endpoint},
+            commands=smoke_test_commands,
+        )
+        pipeline.add_stage(production, post=[smoke_test])
